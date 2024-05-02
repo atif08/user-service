@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"  # RabbitMQ default port
+      - "15672:15672"  # RabbitMQ management UI port
+    networks:
+      - app_net
+
+  users-service:
+    build:
+      context: ./users-service
+    depends_on:
+      - rabbitmq
+    environment:
+      - APP_ENV=dev
+      - DATABASE_URL=mysql://root:root@db:3306/users_db
+    ports:
+      - "8000:8000"  # Adjust as needed
+    networks:
+      - app_net
+
+  notifications-service:
+    build:
+      context: ./notifications-service
+    depends_on:
+      - rabbitmq
+    environment:
+      - APP_ENV=dev
+    networks:
+      - app_net
+
+networks:
+  app_net:
+    driver: bridge
